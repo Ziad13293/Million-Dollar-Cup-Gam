@@ -1,22 +1,21 @@
-body { 
-    font-family: 'Comic Sans MS' ,  cursive;
+body {
+    font-family: 'Comic Sans MS', cursive;
     text-align: center;
     background: #f0f8ff;
 }
 
 .cups {
-    display:flex;
+    display: flex;
     justify-content: center;
     gap: 30px;
     margin: 40px 0;
 }
 
-.cups {
+.cup {
     font-size: 60px;
     cursor: pointer;
     transition: transform 0.3s;
 }
-
 
 .cup:hover {
     transform: translateY(-10px);
@@ -24,7 +23,7 @@ body {
 
 #shuffle {
     padding: 10px 20px;
-    background: #4caF50;
+    background: #4CAF50;
     color: white;
     border: none;
     border-radius: 5px;
@@ -39,11 +38,11 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(255, 215, 0, 0.9);
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;;
+    align-items: center;
 }
 
 .hidden {
@@ -52,4 +51,8 @@ body {
 
 .visible {
     display: flex !important;
+}
+
+.cup {
+    transition: transform 0.3s;
 }
