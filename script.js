@@ -1,79 +1,113 @@
-const cupsContainer = document.querySelector('.cups');
+const cups = document.querySelectorAll('.cup');
 const shuffleBtn = document.getElementById('shuffle');
 const message = document.getElementById('message');
 const scoreDisplay = document.getElementById('score');
 const winScreen = document.getElementById('win-screen');
+const playAgainBtn = document.getElementById('play-again');
 
 let ballPosition = 1;
 let score = 0;
-let cupCount = 3; // Start with 3 cups
+let isShuffling = false;
 
-// Create initial cups
-createCups();
+// Initialize game
+resetGame();
 
+// Event listeners
 shuffleBtn.addEventListener('click', shuffleCups);
+playAgainBtn.addEventListener('click', resetGame);
 
-function createCups() {
-    cupsContainer.innerHTML = '';
-    for (let i = 1; i <= cupCount; i++) {
-        const cup = document.createElement('div');
-        cup.className = 'cup';
-        cup.dataset.cup = i;
-        cup.textContent = i === ballPosition ? '⚽' : '🥤';
-        cup.addEventListener('click', checkGuess);
-        cupsContainer.appendChild(cup);
-    }
-}
+cups.forEach(cup => {
+    cup.addEventListener('click', () => {
+        if (isShuffling) return;
+        
+        checkGuess(cup);
+    });
+});
 
 function shuffleCups() {
-    // Reset display
-    document.querySelectorAll('.cup').forEach(cup => {
+    if (isShuffling) return;
+    
+    isShuffling = true;
+    shuffleBtn.disabled = true;
+    message.textContent = "Shuffling...";
+    
+    // Hide all cups
+    cups.forEach(cup => {
         cup.textContent = '🥤';
+        cup.style.pointerEvents = 'none';
     });
-
-    // Animate shuffles (3 moves)
-    let moves = 0;
+    
+    // Animate shuffles
+    let swaps = 0;
     const shuffleInterval = setInterval(() => {
-        // Move ball to random adjacent cup
-        const newPos = Math.max(1, Math.min(cupCount, 
-            ballPosition + (Math.random() > 0.5 ? 1 : -1)));
+        // Pick two random cups to swap
+        const cup1 = Math.floor(Math.random() * 3);
+        const cup2 = (cup1 + 1 + Math.floor(Math.random() * 2)) % 3;
         
         // Animate swap
-        const cups = document.querySelectorAll('.cup');
-        cups[ballPosition-1].textContent = '🥤';
-        cups[newPos-1].textContent = '⚽';
+        cups[cup1].style.transform = 'translateX(30px)';
+        cups[cup2].style.transform = 'translateX(-30px)';
         
-        // Flash animation
-        cups[newPos-1].style.transform = 'translateY(-20px)';
         setTimeout(() => {
-            cups[newPos-1].style.transform = '';
-        }, 200);
-        
-        ballPosition = newPos;
-        moves++;
-        
-        if (moves >= 3) {
-            clearInterval(shuffleInterval);
-            message.textContent = "Where's the ball?";
-        }
-    }, 500);
+            // Complete swap
+            cups[cup1].style.transform = '';
+            cups[cup2].style.transform = '';
+            
+            // Update ball position if swapped
+            if (cup1 + 1 === ballPosition) {
+                ballPosition = cup2 + 1;
+            } else if (cup2 + 1 === ballPosition) {
+                ballPosition = cup1 + 1;
+            }
+            
+            swaps++;
+            if (swaps >= 3) {
+                clearInterval(shuffleInterval);
+                isShuffling = false;
+                message.textContent = "Which cup hides the ball?";
+                cups.forEach(cup => cup.style.pointerEvents = 'auto');
+            }
+        }, 300);
+    }, 600);
 }
 
-function checkGuess(e) {
-    const chosenCup = parseInt(e.target.dataset.cup);
-    if (chosenCup === ballPosition) {
+function checkGuess(clickedCup) {
+    const chosenPosition = parseInt(clickedCup.dataset.cup);
+    
+    // Reveal only the clicked cup
+    clickedCup.textContent = chosenPosition === ballPosition ? '⚽' : '🥤';
+    
+    // Disable further clicks
+    cups.forEach(cup => cup.style.pointerEvents = 'none');
+    
+    if (chosenPosition === ballPosition) {
         score++;
         scoreDisplay.textContent = score;
+        message.textContent = "Correct! 🎉";
         
         if (score >= 3) {
-            winScreen.classList.remove('hidden');
+            winScreen.style.display = 'flex';
         } else {
-            // Add new cup after correct guess
-            cupCount = Math.min(5, cupCount + 1); // Max 5 cups
-            createCups();
-            message.textContent = `Good job! Now with ${cupCount} cups!`;
+            shuffleBtn.disabled = false;
         }
     } else {
         message.textContent = "Wrong! Try again.";
+        shuffleBtn.disabled = false;
     }
+}
+
+function resetGame() {
+    score = 0;
+    scoreDisplay.textContent = '0';
+    winScreen.style.display = 'none';
+    message.textContent = "Click shuffle to start!";
+    ballPosition = Math.floor(Math.random() * 3) + 1;
+    
+    cups.forEach(cup => {
+        cup.textContent = '🥤';
+        cup.style.pointerEvents = 'auto';
+        cup.style.transform = '';
+    });
+    
+    shuffleBtn.disabled = false;
 }
